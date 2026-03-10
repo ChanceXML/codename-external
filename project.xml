@@ -249,7 +249,8 @@
 		
     <android permission="android.permission.READ_EXTERNAL_STORAGE" />
     <android permission="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <android permission="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+	<header help="https://developer.android.com/training/data-storage/manage-all-files" />
+    <android permission="android.permission.MANAGE_EXTERNAL_STORAGE" />
 		
 <android>
     <manifestAdditions>
