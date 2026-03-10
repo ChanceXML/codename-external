@@ -1,7 +1,7 @@
 package mobile;
 
 import flixel.FlxG;
-import flixel.plugin.FlxPlugin;
+import flixel.system.FlxPlugin;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
 import flixel.input.touch.FlxTouch;
