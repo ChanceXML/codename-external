@@ -30,6 +30,7 @@ import extension.androidtools.Permissions;
 import extension.androidtools.os.Environment;
 import extension.androidtools.Settings;
 import mobile.MobilePermissions;
+import mobile.MobileMouse;
 #end
 
 class Main extends Sprite
@@ -86,7 +87,7 @@ class Main extends Sprite
         #end
 	
 		#if mobile
-        FlxG.plugins.add(new mobile.MobileMouse());
+        MobileMouseOverlay.init();
         #end
 	 
 		CrashHandler.init();
