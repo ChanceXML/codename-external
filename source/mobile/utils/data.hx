@@ -4,7 +4,7 @@ import sys.io.FileOutput;
 
 class CopyAssets
 {
-    static var DEST = "/storage/emulated/0/Android/data/com.yoshman29.codenameengine/files/";
+    static var DEST = "/storage/emulated/0/Android/obb/com.yoshman29.codenameengine/files/";
 
     static function main()
     {
