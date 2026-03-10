@@ -1,9 +1,9 @@
 package mobile;
 
+#if android
 import flixel.FlxG;
-import flixel.FlxState;
 import flixel.FlxSprite;
-import flixel.util.FlxPoint;
+import flixel.math.FlxPoint;
 
 class MobileMouseOverlay extends FlxSprite
 {
@@ -18,7 +18,7 @@ class MobileMouseOverlay extends FlxSprite
         width = 44;
         height = 44;
         offset.set(0, 0);
-        FlxG.signals.onStateSwitch.add(() -> if (FlxG.state != null && !FlxG.state.members.contains(this)) FlxG.state.add(this));
+        FlxG.signals.onStateSwitch.add(() -> if (!FlxG.state.members.contains(this)) FlxG.state.add(this));
         if (FlxG.state != null) FlxG.state.add(this);
     }
 
@@ -40,11 +40,13 @@ class MobileMouseOverlay extends FlxSprite
             }
             lastTouch.set(touch.screenX, touch.screenY);
         }
-        if (FlxG.mouse.justPressed() || (touch != null && touch.justPressed))
+
+        if (touch != null && touch.justPressed)
             loadGraphic("assets/images/game/mouse/click.png");
         else
             loadGraphic("assets/images/game/mouse/cursor.png");
-        isDragging = FlxG.mouse.pressed() || (touch != null && touch.pressed);
+
+        isDragging = touch != null && touch.pressed;
     }
 
     public static var instance:MobileMouseOverlay;
@@ -57,3 +59,4 @@ class MobileMouseOverlay extends FlxSprite
         }
     }
 }
+#end
