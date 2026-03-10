@@ -25,7 +25,7 @@ import sys.FileSystem;
 import sys.io.File;
 #if android
 import extension.androidtools.content.Context;
-import extension.androidtools.os.Build;
+import extension.androidtools.os.Build.VERSION as AndroidVersion;
 import extension.androidtools.Permissions;
 import extension.androidtools.os.Environment;
 import extension.androidtools.Settings;
@@ -75,9 +75,9 @@ class Main extends Sprite
         var permissions = [
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE"
-         ];
+        ];
 
-        if (Build.SDK_INT >= 30)
+        if (AndroidVersion.SDK_INT >= 30)
         {
         permissions.push("android.permission.MANAGE_EXTERNAL_STORAGE");
         }
