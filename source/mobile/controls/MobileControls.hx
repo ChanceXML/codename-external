@@ -28,32 +28,29 @@ class MobileControls extends FlxGroup
     }
 
     function createButton(x:Float, y:Float, img:String, key:String)
+{
+    var btn = new FlxButton(x, y);
+    btn.loadGraphic("assets/images/mobile/buttons/" + img + ".png");
+    btn.alpha = 0.5;
+
+    btn.onDown.callback = function()
     {
-        var btn = new FlxButton(x, y);
-        btn.loadGraphic("assets/images/mobile/buttons/" + img + ".png");
+        btn.alpha = 0.9;
+        triggerKey(key, true);
+    };
+
+    btn.onUp.callback = function()
+    {
         btn.alpha = 0.5;
-        var pressed:Bool = false;
+        triggerKey(key, false);
+    };
 
-        btn.onDown.callback = function()
-        {
-            if (pressed) return;
-            pressed = true;
-            btn.alpha = 0.9;
-            triggerKey(key, true);
-            triggerKey(key, false);
-        };
+    btn.onOut.callback = btn.onUp.callback;
 
-        btn.onUp.callback = function()
-        {
-            pressed = false;
-            btn.alpha = 0.5;
-        };
-
-        btn.onOut.callback = btn.onUp.callback;
-        btn.cameras = [cam];
-        add(btn);
-    }
-
+    btn.cameras = [cam];
+    add(btn);
+}
+	
     function createDpad(type:Int)
     {
         switch(type)
@@ -90,11 +87,13 @@ class MobileControls extends FlxGroup
     }
 
     function triggerKey(key:String, pressed:Bool)
-    {
-        var type = pressed ? KeyboardEvent.KEY_DOWN : KeyboardEvent.KEY_UP;
-        var evt = new KeyboardEvent(type, true, false, 0, getFlxKeyCode(key));
-        Lib.current.stage.dispatchEvent(evt);
-    }
+{
+    var keyCode = getFlxKeyCode(key);
+    var type = pressed ? KeyboardEvent.KEY_DOWN : KeyboardEvent.KEY_UP;
+
+    var evt = new KeyboardEvent(type, true, false, 0, keyCode, 0, false, false, false, false);
+    Lib.current.stage.dispatchEvent(evt);
+}
 
     function getFlxKeyCode(key:String):Int
     {
