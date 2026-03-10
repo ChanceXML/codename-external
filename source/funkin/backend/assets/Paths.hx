@@ -23,7 +23,7 @@ class Paths
 	public static var tempFramesCache:Map<String, FlxFramesCollection> = [];
 
 	#if android
-	public static final ANDROID_EXTERNAL_DIR:String = "/storage/emulated/0/Android/obb/com.yoshman29.codenameengine/files/";
+	public static final ANDROID_EXTERNAL_DIR:String = "/storage/emulated/0/Android/media/com.yoshman29.codenameengine/files/";
 	#end
 
 	public static function init() {
