@@ -3,12 +3,14 @@ package mobile.utils;
 #if android
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.math.FlxPoint;
+import flixel.math.FlxRect;
+import flixel.input.touch.FlxTouch;
 
 class MobileMouseOverlay extends FlxSprite
 {
     var isDragging:Bool = false;
-    var lastTouch:FlxPoint = new FlxPoint();
+    var lastTouchX:Float = 0;
+    var lastTouchY:Float = 0;
 
     public function new()
     {
@@ -18,35 +20,45 @@ class MobileMouseOverlay extends FlxSprite
         width = 44;
         height = 44;
         offset.set(0, 0);
-        FlxG.signals.onStateSwitch.add(() -> if (!FlxG.state.members.contains(this)) FlxG.state.add(this));
-        if (FlxG.state != null) FlxG.state.add(this);
+
+        if (FlxG.state != null && !FlxG.state.members.contains(this))
+            FlxG.state.add(this);
+
+        FlxG.signals.postStateSwitch.add(() -> {
+            if (!FlxG.state.members.contains(this))
+                FlxG.state.add(this);
+        });
     }
 
     override public function update(elapsed:Float):Void
     {
         super.update(elapsed);
-        var touch = FlxG.touches.list.length > 0 ? FlxG.touches.list[0] : null;
+
+        var touch:FlxTouch = FlxG.touches.list.length > 0 ? FlxG.touches.list[0] : null;
+
         if (touch != null)
         {
             if (isDragging)
             {
-                x += touch.screenX - lastTouch.x;
-                y += touch.screenY - lastTouch.y;
+                x += touch.screenX - lastTouchX;
+                y += touch.screenY - lastTouchY;
             }
             else
             {
                 x = touch.screenX;
                 y = touch.screenY;
             }
-            lastTouch.set(touch.screenX, touch.screenY);
+
+            lastTouchX = touch.screenX;
+            lastTouchY = touch.screenY;
+
+            isDragging = touch.pressed;
+
+            if (touch.justPressed)
+                loadGraphic("assets/images/game/mouse/click.png");
+            else
+                loadGraphic("assets/images/game/mouse/cursor.png");
         }
-
-        if (touch != null && touch.justPressed)
-            loadGraphic("assets/images/game/mouse/click.png");
-        else
-            loadGraphic("assets/images/game/mouse/cursor.png");
-
-        isDragging = touch != null && touch.pressed;
     }
 
     public static var instance:MobileMouseOverlay;
@@ -54,9 +66,7 @@ class MobileMouseOverlay extends FlxSprite
     public static function init():Void
     {
         if (instance == null)
-        {
             instance = new MobileMouseOverlay();
-        }
     }
 }
 #end
