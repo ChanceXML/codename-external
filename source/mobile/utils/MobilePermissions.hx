@@ -8,7 +8,7 @@ import extension.androidtools.Settings as AndroidSettings;
 import extension.androidtools.Permissions as AndroidPermissions;
 #end
 
-class AndroidRequest {
+class AndroidHelper {
 
     public static function request():Void {
         #if android
