@@ -25,7 +25,7 @@ import sys.FileSystem;
 import sys.io.File;
 #if android
 import extension.androidtools.content.Context;
-import extension.androidtools.os.Build.VERSION as AndroidVersion;
+import extension.androidtools.os.Build;
 import extension.androidtools.Permissions;
 import extension.androidtools.os.Environment;
 import extension.androidtools.Settings;
@@ -105,11 +105,6 @@ class Main extends Sprite
 	}
 
 	public static function loadGameSettings() {
-
-		#if android
-        mobile.StorageUtil.requestPermissions();
-        #end
-	
 		WindowUtils.init();
 		SaveWarning.init();
 		MemoryUtil.init();
