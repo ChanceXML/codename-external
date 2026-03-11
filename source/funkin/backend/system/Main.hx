@@ -73,7 +73,7 @@ class Main extends Sprite
 		instance = this;
 
 		#if android
-        AndroidHelper.checkStoragePermission();
+        mobile.utils.MobilePermissions.request();
         #end
 	 
 		CrashHandler.init();
