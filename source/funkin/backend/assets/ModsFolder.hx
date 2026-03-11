@@ -9,65 +9,29 @@ import openfl.utils.AssetLibrary;
 import openfl.utils.AssetManifest;
 
 using StringTools;
-#if MOD_SUPPORT
+
+#if (sys || MOD_SUPPORT)
 import sys.FileSystem;
 #end
 
-
 class ModsFolder {
-	/**
-	 * INTERNAL - Only use when editing source mods!!
-	 */
 	@:dox(hide) public static var onModSwitch:FlxTypedSignal<String->Void> = new FlxTypedSignal<String->Void>();
 
-	/**
-	 * Current mod folder. Will affect `Paths`.
-	 */
 	public static var currentModFolder:String = null;
-	/**
-	 * Path to the `mods` folder.
-	 */
 	public static var modsPath:String = getDefaultModsPath();
-	/**
-	 * Path to the `addons` folder.
-	 */
 	public static var addonsPath:String = "./addons/";
-
-	/**
-	 * If accessing a file as assets/data/global/LIB_mymod.hx should redirect to mymod:assets/data/global.hx
-	 */
 	public static var useLibFile:Bool = true;
-
-	/**
-	 * Whenever its the first time mods has been reloaded.
-	 */
 	private static var __firstTime:Bool = true;
 
-	/**
-	 * Initializes `mods` folder.
-	 */
 	public static function init() {
 		if(!getModsList().contains(Options.lastLoadedMod)) {
-			if(Options.lastLoadedMod != null)
-				Logs.warn("Mod \"" + Options.lastLoadedMod + "\" not found in mods list, switching to base game!");
 			Options.lastLoadedMod = null;
 		}
 	}
 
-	/**
-	 * Switches mod - unloads all the other mods, then load this one.
-	 * @param libName
-	 */
 	public static function switchMod(mod:String) {
 		Options.lastLoadedMod = currentModFolder = mod;
 		reloadMods();
-		if(mod == null) {
-			mod = "(default)";
-		}
-		Logs.traceColored([
-			Logs.logText('Switched to mod: '),
-			Logs.logText(mod, GREEN)
-		], VERBOSE);
 	}
 
 	public static function reloadMods() {
@@ -76,18 +40,12 @@ class ModsFolder {
 		__firstTime = false;
 	}
 
-	/**
-	 * Loads a mod library from the specified path. Supports folders and zips.
-	 * @param modName Name of the mod
-	 * @param force Whenever the mod should be reloaded if it has already been loaded
-	 */
 	public static function loadModLib(path:String, force:Bool = false, ?modName:String) {
-		#if MOD_SUPPORT
+		#if (sys || MOD_SUPPORT)
 		if (FileSystem.exists('$path.zip'))
 			return loadLibraryFromZip('$path'.toLowerCase(), '$path.zip', force, modName);
 		else
 			return loadLibraryFromFolder('$path'.toLowerCase(), '$path', force, modName);
-
 		#else
 		return null;
 		#end
@@ -95,32 +53,24 @@ class ModsFolder {
 
 	public static function getModsList():Array<String> {
 		var mods:Array<String> = [];
-		#if MOD_SUPPORT
+		#if (sys || MOD_SUPPORT)
 		if (!FileSystem.exists(modsPath)) {
-			// Mods directory does not exist yet, create it
-			FileSystem.createDirectory(modsPath);
+			try { FileSystem.createDirectory(modsPath); } catch(e) {}
 		}
-		
+		if (!FileSystem.exists(modsPath)) return mods;
 		final modsList:Array<String> = FileSystem.readDirectory(modsPath);
-
-		if (modsList == null || modsList.length <= 0)
-			return mods;
-
+		if (modsList == null || modsList.length <= 0) return mods;
 		for (modFolder in modsList) {
 			if (FileSystem.isDirectory(modsPath + modFolder)) {
 				mods.push(modFolder);
-			} else {
-				var ext = Path.extension(modFolder).toLowerCase();
-				switch(ext) {
-					case 'zip':
-						// is a zip mod!!
-						mods.push(Path.withoutExtension(modFolder));
-				}
+			} else if (Path.extension(modFolder).toLowerCase() == 'zip') {
+				mods.push(Path.withoutExtension(modFolder));
 			}
 		}
 		#end
 		return mods;
 	}
+
 	public static function getLoadedModsLibs(skipTranslated:Bool = false):Array<IModsAssetLibrary> {
 		var libs = [];
 		for (i in Paths.assetsTree.libraries) {
@@ -132,6 +82,7 @@ class ModsFolder {
 		}
 		return libs;
 	}
+
 	public static function getLoadedMods(skipTranslated:Bool = false):Array<String>
 		return [for (modLib in getLoadedModsLibs(skipTranslated)) modLib.modName];
 
@@ -141,14 +92,12 @@ class ModsFolder {
 		assets.version = 2;
 		assets.libraryArgs = [];
 		assets.assets = [];
-
 		return AssetLibrary.fromManifest(assets);
 	}
 
 	public static function registerFont(font:Font) {
 		var openflFont = new OpenFLFont();
-		@:privateAccess
-		openflFont.__fromLimeFont(font);
+		@:privateAccess openflFont.__fromLimeFont(font);
 		OpenFLFont.registerFont(openflFont);
 		return font;
 	}
@@ -156,8 +105,7 @@ class ModsFolder {
 	public static function prepareModLibrary(libName:String, lib:IModsAssetLibrary, force:Bool = false, ?tag:AssetSource) {
 		var openLib = prepareLibrary(libName, force);
 		lib.prefix = 'assets/';
-		@:privateAccess
-		openLib.__proxy = cast(lib, lime.utils.AssetLibrary);
+		@:privateAccess openLib.__proxy = cast(lib, lime.utils.AssetLibrary);
 		if (tag != null) {
 			openLib.tag = tag;
 			cast(lib, lime.utils.AssetLibrary).tag = tag;
@@ -165,16 +113,15 @@ class ModsFolder {
 		return openLib;
 	}
 
-	private static function getDefaultModsPath():String {
-    #if android
-    var packageName = "com.yoshman29.codenameengine";
-    return "/storage/emulated/0/Android/media/" + packageName + "/files/mods/";
-    #else
-    return "./mods/";
-    #end
+	public static function getDefaultModsPath():String {
+		#if android
+		return "/storage/emulated/0/Android/media/com.yoshman29.codenameengine/files/mods/";
+		#else
+		return "./mods/";
+		#end
 	}
-						
-	#if MOD_SUPPORT
+
+	#if (sys || MOD_SUPPORT)
 	public static function loadLibraryFromFolder(libName:String, folder:String, force:Bool = false, ?modName:String, ?tag:AssetSource = MODS) {
 		return prepareModLibrary(libName, new ModsFolderLibrary(folder, libName, modName), force, tag);
 	}
