@@ -2,7 +2,7 @@ package mobile.utils;
 
 import extension.androidtools.Settings;
 import extension.androidtools.os.Environment;
-import extension.androidtools.os.Permissions;
+import extension.androidtools.Permissions;
 import extension.androidtools.os.Build;
 import extension.androidtools.os.Build.VERSION;
 import extension.androidtools.os.Build.VERSION_CODES;
