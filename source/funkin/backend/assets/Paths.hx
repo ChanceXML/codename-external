@@ -19,11 +19,10 @@ using StringTools;
 class Paths
 {
 	public static var assetsTree:AssetsLibraryList;
-
 	public static var tempFramesCache:Map<String, FlxFramesCollection> = [];
 
 	#if android
-	public static final ANDROID_EXTERNAL_DIR:String = "/storage/emulated/0/Android/media/com.yoshman29.codenameengine/files/";
+	public static final ANDROID_MEDIA_DIR:String = "/storage/emulated/0/Android/media/com.yoshman29.codenameengine/";
 	#end
 
 	public static function init() {
@@ -32,20 +31,29 @@ class Paths
 		});
 	}
 
+	private static function getAndroidPath(relPath:String):String {
+		#if android
+		var path1 = Path.normalize(ANDROID_MEDIA_DIR + relPath);
+		if (FileSystem.exists(path1)) return path1;
+
+		var path2 = Path.normalize(ANDROID_MEDIA_DIR + "files/" + relPath);
+		if (FileSystem.exists(path2)) return path2;
+		#end
+		return null;
+	}
+
 	public static function getPath(file:String, ?library:String) {
 		var returnedPath:String = library != null ? '$library:assets/$file' : 'assets/$file';
 		
 		#if android
 		if (ModsFolder.currentModFolder != null) {
-			var modPath = Path.normalize(ANDROID_EXTERNAL_DIR + ModsFolder.modsPath + ModsFolder.currentModFolder + '/' + file);
-			if (FileSystem.exists(modPath)) return modPath;
+			var modPath = getAndroidPath(ModsFolder.modsPath + ModsFolder.currentModFolder + '/' + file);
+			if (modPath != null) return modPath;
 		}
 		
 		var extAssetPath = library != null ? 'assets/$library/$file' : 'assets/$file';
-		var externalPath = Path.normalize(ANDROID_EXTERNAL_DIR + extAssetPath);
-		if (FileSystem.exists(externalPath)) {
-			return externalPath;
-		}
+		var externalPath = getAndroidPath(extAssetPath);
+		if (externalPath != null) return externalPath;
 		#end
 
 		#if (sys && !windows)
@@ -240,9 +248,9 @@ class Paths
 
 	inline static public function getAssetsRoot():String {
 		#if android
-		return ModsFolder.currentModFolder != null ? ANDROID_EXTERNAL_DIR + '${ModsFolder.modsPath}${ModsFolder.currentModFolder}' : ANDROID_EXTERNAL_DIR + "assets/";
+		return ModsFolder.currentModFolder != null ? ANDROID_MEDIA_DIR + '${ModsFolder.modsPath}${ModsFolder.currentModFolder}' : ANDROID_MEDIA_DIR + "assets/";
 		#else
-		return ModsFolder.currentModFolder != null ? '${ModsFolder.modsPath}${ModsFolder.currentModFolder}' : #if (sys && TEST_BUILD) './${Main.pathBack}assets/' #else './assets' #end;
+		return ModsFolder.currentModFolder != null ? '${ModsPath}${ModsFolder.currentModFolder}' : #if (sys && TEST_BUILD) './${Main.pathBack}assets/' #else './assets' #end;
 		#end
 	}
 
@@ -338,8 +346,8 @@ class Paths
 		
 		#if android
 		if (ModsFolder.currentModFolder != null) {
-			var modPath = ANDROID_EXTERNAL_DIR + ModsFolder.modsPath + ModsFolder.currentModFolder + '/' + key;
-			if (FileSystem.exists(modPath) && FileSystem.isDirectory(modPath)) {
+			var modPath = getAndroidPath(ModsFolder.modsPath + ModsFolder.currentModFolder + '/' + key);
+			if (modPath != null && FileSystem.isDirectory(modPath)) {
 				var modContent = FileSystem.readDirectory(modPath);
 				for (file in modContent) {
 					if (FileSystem.isDirectory('$modPath$file') && !content.contains(file)) {
@@ -349,8 +357,8 @@ class Paths
 			}
 		}
 
-		var extPath = ANDROID_EXTERNAL_DIR + 'assets/$key';
-		if (FileSystem.exists(extPath) && FileSystem.isDirectory(extPath)) {
+		var extPath = getAndroidPath('assets/$key');
+		if (extPath != null && FileSystem.isDirectory(extPath)) {
 			var sysContent = FileSystem.readDirectory(extPath);
 			for (file in sysContent) {
 				if (FileSystem.isDirectory('$extPath$file') && !content.contains(file)) {
@@ -373,8 +381,8 @@ class Paths
 
 		#if android
 		if (ModsFolder.currentModFolder != null) {
-			var modPath = ANDROID_EXTERNAL_DIR + ModsFolder.modsPath + ModsFolder.currentModFolder + '/' + key;
-			if (FileSystem.exists(modPath) && FileSystem.isDirectory(modPath)) {
+			var modPath = getAndroidPath(ModsFolder.modsPath + ModsFolder.currentModFolder + '/' + key);
+			if (modPath != null && FileSystem.isDirectory(modPath)) {
 				var modContent = FileSystem.readDirectory(modPath);
 				for (file in modContent) {
 					if (!FileSystem.isDirectory('$modPath$file') && !content.contains(file)) {
@@ -384,8 +392,8 @@ class Paths
 			}
 		}
 
-		var extPath = ANDROID_EXTERNAL_DIR + 'assets/$key';
-		if (FileSystem.exists(extPath) && FileSystem.isDirectory(extPath)) {
+		var extPath = getAndroidPath('assets/$key');
+		if (extPath != null && FileSystem.isDirectory(extPath)) {
 			var sysContent = FileSystem.readDirectory(extPath);
 			for (file in sysContent) {
 				if (!FileSystem.isDirectory('$extPath$file') && !content.contains(file)) {
