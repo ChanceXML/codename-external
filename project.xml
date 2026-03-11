@@ -247,9 +247,14 @@
     <!-- Mobile Stuff !-->
 	<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33"/>
 		
-    <config:android permission="android.permission.READ_EXTERNAL_STORAGE" />
+    <config:android permission="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <config:android permission="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <config:android permission="android.permission.MANAGE_EXTERNAL_STORAGE" if="android" />
+
+    <config:android permission="android.permission.READ_MEDIA_IMAGES" />
+    <config:android permission="android.permission.READ_MEDIA_VIDEO" />
+    <config:android permission="android.permission.READ_MEDIA_AUDIO" />
+
+    <config:android permission="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 		
 <android>
     <manifestAdditions>
