@@ -18,7 +18,6 @@ class Paths
 
 	public static var tempFramesCache:Map<String, FlxFramesCollection> = [];
 
-	// Define the base Android external storage path
 	public static var androidDir:String = "/storage/emulated/0/.codenameengine/";
 
 	public static function init() {
@@ -30,7 +29,6 @@ class Paths
 	public static inline function getPath(file:String, ?library:String) {
 		var returnedPath:String = library != null ? '$library:assets/$library/$file' : 'assets/$file';
 
-		// Look on the Android SD Card/External Storage first
 		#if android
 		var androidPath:String = Path.normalize(androidDir + returnedPath);
 		if (sys.FileSystem.exists(androidPath)) {
@@ -38,7 +36,6 @@ class Paths
 		}
 		#end
 
-		// Original fallback for internal APK assets or Desktop
 		#if (sys && !windows)
 		returnedPath = Path.normalize(returnedPath);
 		if (OpenFlAssets.exists(returnedPath)) return returnedPath;
@@ -153,10 +150,6 @@ class Paths
 		return getPath('data/characters/$character.xml', null);
 	}
 
-	/**
-	 * Gets the name of a registered font.
-	 * @param font The font's path (if it's already passed as a font name, the same name will be returned)
-	 */
 	inline static public function getFontName(font:String) {
 		return OpenFlAssets.exists(font, FONT) ? OpenFlAssets.getFont(font).fontName : font;
 	}
@@ -207,7 +200,6 @@ class Paths
 		return FlxAtlasFrames.fromAseprite('$key.${ext != null ? ext : Flags.IMAGE_EXT}', '$key.json');
 
 	inline static public function getAssetsRoot():String {
-		// Ensure the absolute Android path is returned as the root
 		#if android
 		return androidDir + (ModsFolder.currentModFolder != null ? 'mods/${ModsFolder.currentModFolder}' : 'assets');
 		#else
@@ -215,11 +207,6 @@ class Paths
 		#end
 	}
 
-	/**
-	 * Gets frames at specified path.
-	 * @param key Path to the frames
-	 * @param library (Additional) library to load the frames from.
-	 */
 	public static function getFrames(key:String, assetsPath:Bool = false, ?library:String, ?ext:String = null, ?animateSettings:FlxAnimateSettings) {
 		if (tempFramesCache.exists(key)) {
 			var frames = tempFramesCache[key];
@@ -231,9 +218,6 @@ class Paths
 		return tempFramesCache[key] = loadFrames(assetsPath ? key : Paths.image(key, library, true, ext), false, null, false, ext, animateSettings);
 	}
 
-	/**
-	 * Checks if the images needed for using getFrames() exist.
-	 */
 	public static function framesExists(key:String, checkAtlas:Bool = false, checkMulti:Bool = true, assetsPath:Bool = false, ?library:String) {
 		var path = assetsPath ? key : Paths.image(key, library, true);
 		var noExt = Path.withoutExtension(path);
@@ -250,9 +234,6 @@ class Paths
 		return false;
 	}
 
-	/**
-	 * Loads frames from a specific image path.
-	 */
 	static function loadFrames(path:String, Unique:Bool = false, Key:String = null, SkipAtlasCheck:Bool = false, SkipMultiCheck:Bool = false, ?Ext:String = null, ?animateSettings:FlxAnimateSettings):FlxFramesCollection {
 		var noExt = Path.withoutExtension(path);
 		var ext = Ext != null ? Ext : Flags.IMAGE_EXT;
@@ -263,7 +244,6 @@ class Paths
 			if (frames != null)
 				return frames;
 
-			trace("no frames yet for multiple atlases!!");
 			var cur = 1;
 			var finalFrames = new MultiFramesCollection(graphic);
 			while(Assets.exists('$noExt/$cur.${ext}')) {
@@ -291,15 +271,40 @@ class Paths
 	public static function getFolderDirectories(key:String, addPath:Bool = false, source:AssetSource = BOTH):Array<String> {
 		if (!key.endsWith("/")) key += "/";
 		var content = assetsTree.getFolders('assets/$key', source);
+
+		#if android
+		var externalPath = Path.normalize(androidDir + 'assets/$key');
+		if (sys.FileSystem.exists(externalPath) && sys.FileSystem.isDirectory(externalPath)) {
+			for (item in sys.FileSystem.readDirectory(externalPath)) {
+				if (sys.FileSystem.isDirectory(externalPath + '/' + item) && !content.contains(item)) {
+					content.push(item);
+				}
+			}
+		}
+		#end
+
 		if (addPath) {
 			for(k=>e in content)
 				content[k] = '$key$e';
 		}
 		return content;
 	}
+
 	static public function getFolderContent(key:String, addPath:Bool = false, source:AssetSource = BOTH, noExtension:Bool = false):Array<String> {
 		if (!key.endsWith("/")) key += "/";
 		var content = assetsTree.getFiles('assets/$key', source);
+
+		#if android
+		var externalPath = Path.normalize(androidDir + 'assets/$key');
+		if (sys.FileSystem.exists(externalPath) && sys.FileSystem.isDirectory(externalPath)) {
+			for (item in sys.FileSystem.readDirectory(externalPath)) {
+				if (!sys.FileSystem.isDirectory(externalPath + '/' + item) && !content.contains(item)) {
+					content.push(item);
+				}
+			}
+		}
+		#end
+
 		for (k => e in content) {
 			if (noExtension) e = Path.withoutExtension(e);
 			content[k] = addPath ? '$key$e' : e;
